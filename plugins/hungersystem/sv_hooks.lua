@@ -1,9 +1,30 @@
 local PLUGIN = PLUGIN
 
-function PLUGIN:PlayerSpawn(client)
-    if ( client:IsValid() and client:GetCharacter() ) then
-        client.ixHungerTick = CurTime() + ( ix.config.Get("hungerTime", 120) )
-        client:GetCharacter():SetHunger(100)
+function PLUGIN:CharacterPreSave(char)
+    local client = char:GetPlayer()
+
+    if (char and IsValid(client)) then
+        local timeLeft = 0
+
+        if (client.ixHungerTick) then
+            timeLeft = math.max(client.ixHungerTick - CurTime(), 0)
+        end
+
+        char:SetData("hunger", char:GetHunger())
+        char:SetData("hungerTimeLeft", timeLeft)
+    end
+end
+
+function PLUGIN:CharacterLoaded(char)
+    local client = char:GetPlayer()
+
+    if (char and IsValid(client)) then
+        local hunger = char:GetData("hunger", 100)
+        local timeLeft = char:GetData("hungerTimeLeft", ix.config.Get("hungerTime", 120))
+
+        char:SetHunger(hunger)
+
+        client.ixHungerTick = CurTime() + timeLeft
     end
 end
 
